@@ -1,48 +1,64 @@
-# ai-crawler-log-parser — ferramenta grátis e de código aberto para achar bots de IA no log do servidor
+**English** · [Português (Brasil)](README.pt-BR.md)
 
-`ai-crawler-log-parser` é uma ferramenta gratuita e de código aberto que
-lê um log de servidor (formato common/combined, Apache ou Nginx) e mostra
-quantas vezes cada bot de IA conhecido bateu no site: quantidade de hits,
-primeiro e último acesso, e uma amostra dos caminhos visitados. Separa por
-categoria — bots de busca com IA (retrieval) e bots de treinamento e
-coleta.
+# ai-crawler-log-parser
 
-## A pergunta que ela responde
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg) [![Data: CC BY 4.0](https://img.shields.io/badge/Data-CC%20BY%204.0-lightgrey.svg)](#license)
 
-"O ChatGPT, o Claude, a Perplexity e os outros estão de fato passando pelo
-meu site?" — uma checagem que uma auditoria de SEO tradicional não cobre,
-porque olha para SERP e Search Console, não para o log bruto do servidor.
+`ai-crawler-log-parser` is a free, open source tool that reads a server
+log (Apache or Nginx combined log format) and shows how many times each
+known AI bot hit the site: number of hits, first and last access, and a
+sample of the paths visited. It splits the results by category, AI search
+bots (retrieval) and training and collection bots. It runs locally and no
+data leaves your machine.
 
-**Guard-rail importante: isto é prova de leitura, não prova de citação.**
-O log mostra que o bot passou pela página. Não mostra, e não pode mostrar,
-se aquele conteúdo virou parte de uma resposta gerada por IA — essa
-informação não existe em log nenhum.
+## Contents
 
-## Instalação
+- [Background](#background)
+- [Installation](#installation)
+- [Usage](#usage)
+- [FAQ](#faq)
+- [Limitations](#limitations)
+- [Methodology](#methodology)
+- [Contributing](#contributing)
+- [Author](#author)
+- [License](#license)
 
-Só biblioteca padrão do Python (3.9 ou mais recente). Sem dependência
-externa.
+## Background
+
+"Are ChatGPT, Claude, Perplexity and the others actually crawling my
+site?" A traditional SEO audit does not cover this, because it looks at
+the SERP and Search Console, not at the raw server log.
+
+**Important guard rail: this is proof of reading, not proof of
+citation.** The log shows that the bot fetched the page. It does not and
+cannot show whether that content became part of an AI-generated answer.
+That information does not exist in any log.
+
+## Installation
+
+Python 3.9 or newer, standard library only. No external dependencies.
 
 ```bash
-git clone https://github.com/lucasferrazseo/ai-crawler-log-parser.git
+git clone https://github.com/LucasFerrazSEO/ai-crawler-log-parser.git
 cd ai-crawler-log-parser
 ```
 
-## Como usar, passo a passo
+## Usage
 
-**1. Rode contra o seu arquivo de log.**
+**1. Run it against your log file.**
 
 ```bash
 python ai_crawler_log_parser.py access.log
 ```
 
-**2. Ou processe um log compactado direto**, sem descompactar antes:
+**2. Or process a compressed log directly**, without unpacking it first:
 
 ```bash
 zcat access.log.gz | python ai_crawler_log_parser.py -
 ```
 
-**3. Leia o resultado.** Exemplo real, de um log com dois hits:
+**3. Read the result.** Real output from a three-line log with two bot
+hits. The tool prints its report in Brazilian Portuguese.
 
 ```
 === ai-crawler-log-parser: access.log ===
@@ -57,66 +73,69 @@ zcat access.log.gz | python ai_crawler_log_parser.py -
 (Prova de leitura pelo bot, não prova de citação em uma resposta de IA.)
 ```
 
-**4. Filtre por categoria**, se quiser ver só bots de busca (retrieval em
-tempo real) ou só os de treinamento:
+**4. Filter by category** if you only want the search bots (real-time
+retrieval) or only the training bots:
 
 ```bash
 python ai_crawler_log_parser.py access.log --categoria busca
 ```
 
-**5. Filtre por caminho**, para saber se um bot específico está lendo uma
-seção do site (por exemplo, o blog):
+**5. Filter by path** to find out whether a bot is reading a specific
+section of the site (the blog, for example):
 
 ```bash
 python ai_crawler_log_parser.py access.log --caminho-contem /blog/
 ```
 
-**6. Aumente a amostra de caminhos mostrados por bot** (padrão: 3):
+**6. Show more sample paths per bot** (default: 3):
 
 ```bash
 python ai_crawler_log_parser.py access.log --amostra 10
 ```
 
-## Perguntas frequentes
+## FAQ
 
-**ai-crawler-log-parser é realmente grátis?**
-Sim, código aberto sob licença MIT. Os dados de bots (`ai_bots.json`) são
-CC BY 4.0.
+**Is ai-crawler-log-parser really free?**
+Yes. It is open source under the MIT license. The bot data
+(`ai_bots.json`) is CC BY 4.0.
 
-**Onde encontro o log do meu servidor?**
-Depende da hospedagem. Em VPS com Apache/Nginx, geralmente em
-`/var/log/apache2/access.log` ou `/var/log/nginx/access.log`. Em
-hospedagem compartilhada ou gerenciada, procure por "logs de acesso" ou
-"raw logs" no painel.
+**Where do I find my server log?**
+It depends on your hosting. On a VPS with Apache or Nginx it is usually at
+`/var/log/apache2/access.log` or `/var/log/nginx/access.log`. On shared or
+managed hosting, look for "access logs" or "raw logs" in the control
+panel.
 
-**Preciso de internet para usar?**
-Não. A ferramenta só lê o arquivo de log local; nenhum dado sai da sua
-máquina.
+**Do I need an internet connection to use it?**
+No. The tool only reads the local log file; no data leaves your machine.
 
-**O bot pode estar mentindo no user agent?**
-Pode. A detecção é por substring do user agent declarado — um cliente
-mal-intencionado consegue forjar esse cabeçalho. Isto não é verificação de
-IP/ASN, é leitura do que o servidor recebeu.
+**Can a bot lie in its user agent?**
+Yes. Detection is a substring match on the declared user agent, and a
+malicious client can forge that header. This is not IP or ASN
+verification, it is a reading of what the server received.
 
-## Limitações
+## Limitations
 
-Cobre o formato combined log padrão de Apache/Nginx. Log em outro formato
-(JSON estruturado, CloudFront, Cloudflare Logpush) precisa ser convertido
-antes de usar aqui.
+It covers the standard Apache/Nginx combined log format. Logs in other
+formats (structured JSON, CloudFront, Cloudflare Logpush) need to be
+converted before you use them here.
 
-## Método e origem
+## Methodology
 
-A lista de bots (`ai_bots.json`) é uma cópia sincronizada manualmente do
-repositório [`ai-bots-list`](https://github.com/lucasferrazseo/ai-bots-list).
-Se você já usa aquele repositório, pode apontar `--bots-json` para a
-versão dele em vez desta cópia.
+The bot list (`ai_bots.json`) is a manually synced copy of the
+[`ai-bots-list`](https://github.com/LucasFerrazSEO/ai-bots-list)
+repository. If you already use that repository, you can point
+`--bots-json` at its version instead of this copy.
 
-## Autor
+## Contributing
 
-[Lucas Ferraz](https://lucasferraz.com) — especialista em SEO, criação de
-sites e SEO para IA, fundador da [Lucas Ferraz SEO](https://lucasferrazseo.com).
+Bug reports and suggestions are welcome through [GitHub Issues](https://github.com/LucasFerrazSEO/ai-crawler-log-parser/issues).
 
-## Licença
+## Author
 
-Código: MIT — ver [LICENSE](LICENSE). Dados (`ai_bots.json`): CC BY 4.0,
-ver [ai-bots-list](https://github.com/lucasferrazseo/ai-bots-list).
+[Lucas Ferraz](https://lucasferraz.com) is an SEO, website development and Generative Engine Optimization specialist and the founder of [Lucas Ferraz SEO](https://lucasferrazseo.com).
+
+## License
+
+MIT. See [LICENSE](LICENSE). The bot data in `ai_bots.json` is licensed
+under CC BY 4.0, see
+[ai-bots-list](https://github.com/LucasFerrazSEO/ai-bots-list).
